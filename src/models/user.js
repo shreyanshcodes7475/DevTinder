@@ -14,7 +14,7 @@ const userschema=mongoose.Schema({
     },
 
     age:{
-    type:String
+    type:Number
     },
 
     gender:{
