@@ -1,4 +1,7 @@
     const mongoose=require('mongoose');
+    const validator=require("validator");
+    const jwt =require("jsonwebtoken");
+    const bcrypt= require("bcrypt");
 
     const userschema=mongoose.Schema({
         firstName:{
@@ -12,12 +15,27 @@
             required: true,
         },
 
+        password:{
+            type: String,
+            required: true,
+            validate(value){
+                if(!validator.isStrongPassword(value)){
+                    throw new Error("please enter a strong  password");
+                }
+            }
+
+        },
+
         emailId:{
             type:String,
             required: true,
             lowercase: true,
             unique: true,
-            trim: true
+            trim: true,
+            validate(value){
+            if(!validator.isEmail(value)) throw new Error("your email is not corrrect: " + value);
+
+            }
         },
 
         age:{
@@ -47,11 +65,39 @@
         skills:{
             type: [String],
         },
+
+        about:{
+            type: String,
+            default: "This is the default about given by Devtinder"
+        }
     },
         {
             timestamps: true,
         }
     )
+
+    // token creation method (don't use arrow function here as internal implementation of this is diffrent it will not work for arrow function)
+    userschema.methods.getJWT =async function(){
+        const user= this;
+        const token=await jwt.sign({_id: user._id}, "DEV@Tinder$790",{
+            expiresIn: "7d",
+        });
+
+        return token;
+    }
+
+    // password validation at schema level
+    userschema.methods.validatePassword = async function(passwordInputByUser){
+        const user=this;
+        const passwordHash= user.password;
+
+        const isPasswordValid= await bcrypt.compare(
+            passwordInputByUser,
+            passwordHash
+        )
+
+        return isPasswordValid;
+    }
 
     const User=mongoose.model("User", userschema);
     module.exports=User;

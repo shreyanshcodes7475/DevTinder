@@ -1,23 +1,31 @@
 const express= require("express");
 const app= express();
-const connectDB =require("./utility/database")
-const User=require("./models/user")
+const connectDB =require("./config/database")
+const User=require("./models/user");
+const { validateSignUpData } = require("./utility/Validation");
+const bcrypt=require('bcrypt');
+const validator=require("validator");
+const cookieParser = require("cookie-parser");
+const jwt=require("jsonwebtoken");
+const {userAuth}=require("./middleware/auth")
+const authRouter=require("./routes/auth");
+const requestRouter=require("./routes/request");
+const profileRouter=require("./routes/profile");
+
 
 // its a middleware which  will run first for all type of routes and request - it can read body/json object
 app.use(express.json());
+app.use(cookieParser());
 
-// creating a new user 
-app.post("/signUp", async (req,res)=>{
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/",requestRouter);
 
-    const user=new User(req.body);
-    try{
-        await user.save();
-        res.send("user added succesfully");
-    }
-    catch(err){
-        res.status(400).send("something went wrong"+ err.message);
-    }
-})
+
+
+
+
+
 
 // finding user by email
 app.get("/getUser", async (req,res)=>{
@@ -34,6 +42,7 @@ app.get("/getUser", async (req,res)=>{
     }
 })
 
+
 // feed : showinng all the user
 app.get("/feed", async (req,res)=>{
     try{
@@ -46,6 +55,7 @@ app.get("/feed", async (req,res)=>{
     res.status(400).send("something went wrong"+ err.message)
     }
 })
+
 
 // create a delete user api by id---
 app.delete("/deleteUser", async (req,res)=>{
@@ -61,22 +71,33 @@ app.delete("/deleteUser", async (req,res)=>{
     }
 })
 
+
+
 // update a user by email id
-app.patch("/updateUser", async (req,res)=>{
+app.patch("/updateUser/:userId", async (req,res)=>{
     const userEmailId=req.body.emailId;
     const data=req.body;
+    const userId=req.params?.userId;
 
     try{
-    const user=await User.findOneAndUpdate({emailId: userEmailId}, data,{
+        // restricting the data you can updates 
+        const allowedUpdates=[ "firstName", "lastName",  "emailId", "skills", "about"];
+        const isUpdateAllowed=Object.keys(data).every((k)=>{
+            return allowedUpdates.includes(k);
+        })
+
+        if(!isUpdateAllowed){
+            throw new Error("these Updates are not allowed");
+        }
+        const user=await User.findOneAndUpdate({_id: userId}, data,{
         returnDocument: "after",
         runValidators: true,
-
-    });
-    console.log(user); // by default it will give user data before the updation and if you want after updation data set a third paramter called option set returned document : "after"\
-    res.send("user updated succesfully");
+        });
+        console.log(user); // by default it will give user data before the updation and if you want after updation data set a third paramter called option set returned document : "after"\
+        res.send("user updated succesfully");
     }
     catch(err){
-        res.status(403).send("something went wrong"+ err.message);
+        res.status(403).send("something went wrong: "+ err.message);
     }
 
     
