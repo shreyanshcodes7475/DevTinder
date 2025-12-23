@@ -3,6 +3,12 @@
     const jwt =require("jsonwebtoken");
     const bcrypt= require("bcrypt");
 
+
+    // to make searches efficient , you should add indexes in your db
+    // unique: true (these are the unnique indexes and tht are much faster)(unique: make the field as a indexes)
+    // index: true (these are the normal index)
+    // sparse: true( used to define sparse index )
+    
     const userschema=mongoose.Schema({
         firstName:{
             type:String,
