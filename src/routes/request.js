@@ -1,5 +1,5 @@
 const express=require("express");
-const { userAuth } = require("../middleware/auth");
+const {userAuth}= require("../middleware/auth");
 const ConnectionRequestModel = require("../models/connectionRequest");
 const User =require("../models/user")
 const requestRouter=express.Router();
@@ -60,13 +60,44 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req,res)=
         })
     }
 
+})
 
-    
+// reviewing a connection request(status:Accepted and Rejected)
+requestRouter.post("/request/review/:status/:requestId", userAuth, async (req,res)=>{
+    try{
+        const {requestId, status}= req.params;
+        const allowedStatus=["Accepted", "Rejected"];
+        const loggedInUser=req.user;
+        
+        if(!allowedStatus.includes(status)){
+            return res.status(400).json({
+                message: `${status}, is not allowed`
+            })
+        }
 
-    res.json({
-        message: req.user.firstName + "sent you a connection request",
-        data
-    }); 
+        const connectionRequest= await ConnectionRequestModel.findOne({
+            _id: requestId,
+            toUserId:loggedInUser._id,
+            status: "Interested"
+        })
+
+        if(!connectionRequest){
+            return res.status(400).json({
+                message: "Connection request does not found"
+            })
+        }
+        
+        connectionRequest.status=status;
+        const data= await connectionRequest.save();
+
+        res.status(200).json({
+            message: "Request" + status + "succesfully",
+            data
+        })
+    }
+    catch(err){
+        res.status(400).send("Error: "+ err.message);
+    }
 })
 
 

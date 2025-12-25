@@ -1,15 +1,18 @@
 const mongoose= require("mongoose");
+const User = require("./user");
 
 
 // here we will have query which includes both fromUserId and toUserId
 const connectionRequestSchema=mongoose.Schema({
     fromUserId:{
         type: mongoose.Schema.Types.ObjectId,
+        ref: User,
         required: true
     },
 
     toUserId:{
         type: mongoose.Schema.Types.ObjectId,
+        ref:User,
         required: true
     },
 
@@ -26,14 +29,11 @@ const connectionRequestSchema=mongoose.Schema({
 },{ timestamps:true,});
 
 
-// its just schema level validation(it is a kind of middleware which will be called after everytime when data is saved on db)
-connectionRequestSchema.pre("save", function (next){
-    const connectionRequest=this;
-    if(connectionRequest.fromUserId.equals(connectionRequest.toUserId)){
-        throw new Error("sender userid and reciver id can't be the same");
-    }
-    next();
-})
+connectionRequestSchema.pre("save", async function () {
+  if (this.fromUserId.equals(this.toUserId)) {
+    throw new Error("sender userid and receiver id can't be the same");
+  }
+});
 
 
 // in order to optimize the search we need to add indexes in our schema(its called compound indexes) where query involve more than 1 parameters 

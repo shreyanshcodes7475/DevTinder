@@ -9,7 +9,9 @@ const validator=require("validator");
 authRouter.post("/signup", async(req,res)=>{
     try{
         // validation of data
-        validateSignUpData(req);
+           if(!validateSignUpData(req)){
+          return res.status(400).send("Invalid signup data");
+          }
         const{firstName,lastName,emailId,password,age}=req.body;
 
         // encryption of password
