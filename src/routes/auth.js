@@ -40,7 +40,9 @@ authRouter.post("/signup", async(req,res)=>{
 authRouter.post("/login", async(req,res)=>{
     const{emailId,password}=req.body;
     try{
-        validator.isEmail(emailId);
+        if(!validator.isEmail(emailId)){
+            throw new Error("Invalid email format")
+        }
         const user= await User.findOne({emailId: emailId});
         if(!user){
             throw new Error("Invalid credentials");
@@ -54,8 +56,9 @@ authRouter.post("/login", async(req,res)=>{
             // adding the token inside a cookie and send response to the server
             res.cookie("token", token,{
                 expires:new Date(Date.now()+ 8*3600000),
+                sameSite: "strict"
             })
-            res.send("login succesfully");
+            res.send(user);
         }
         else{
             throw new Error("Invalid credentials");

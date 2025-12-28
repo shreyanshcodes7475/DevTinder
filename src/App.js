@@ -12,9 +12,15 @@ const authRouter=require("./routes/auth");
 const requestRouter=require("./routes/request");
 const profileRouter=require("./routes/profile");
 const userRouter=require("./routes/user")
+const cors=require("cors");
 
 
 // its a middleware which  will run first for all type of routes and request - it can read body/json object
+app.use(cors({
+  // your backend should know where is your frontend otherwise due to diffrent origin browser will never allow you to set cookie
+    origin: "http://localhost:5173", // frontend url
+    credentials: true
+}));
 app.use(express.json());
 app.use(cookieParser());
 
