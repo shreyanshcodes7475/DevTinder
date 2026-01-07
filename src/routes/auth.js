@@ -12,7 +12,7 @@ authRouter.post("/signup", async(req,res)=>{
            if(!validateSignUpData(req)){
           return res.status(400).send("Invalid signup data");
           }
-        const{firstName,lastName,emailId,password,age}=req.body;
+        const{firstName,lastName,emailId,password,age,gender}=req.body;
 
         // encryption of password
         const passwordHash=await bcrypt.hash(password,10);
@@ -23,11 +23,20 @@ authRouter.post("/signup", async(req,res)=>{
             lastName,
             emailId,
             age,
-            password:passwordHash
+            password:passwordHash,
+            gender
         })
+        const savedUser=await user.save();
+        const token = await user.getJWT();
 
-        await user.save();
-        res.send("user added succesfully");
+        res.cookie("token", token,{
+            expires:new Date(Date.now()+ 8*3600000),
+            sameSite: "strict"
+        })
+        res.json({
+            message:"user added succesfully",
+            data:savedUser
+        });
 
     }
     catch(err){
@@ -41,11 +50,15 @@ authRouter.post("/login", async(req,res)=>{
     const{emailId,password}=req.body;
     try{
         if(!validator.isEmail(emailId)){
-            throw new Error("Invalid email format")
+                return res.status(400).json({
+                    message:"Invalid email format",
+                })
         }
         const user= await User.findOne({emailId: emailId});
         if(!user){
-            throw new Error("Invalid credentials");
+                return res.status(400).json({
+                    message:"Invalid credentials",
+                })
         }
 
         const isPasswordValid=await user.validatePassword(password);
@@ -61,18 +74,20 @@ authRouter.post("/login", async(req,res)=>{
             res.send(user);
         }
         else{
-            throw new Error("Invalid credentials");
+                return res.status(400).json({
+                    message:"Invalid credentials",
+                })
         }
     }
     catch(err){
-        res.status(400).send("something went wrong: "+ err.message)
+        res.status(500).json({message: "something went wrong: "+ err.message})
     }
 })
 
 // logout api
 authRouter.post("/logout", async (req,res)=>{
     res.cookie("token", null,{
-        expires: newDate(Date.now()),
+        expires: new Date(Date.now()),
     });
     res.send("log out successfully");
 })

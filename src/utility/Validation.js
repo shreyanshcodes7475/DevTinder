@@ -15,6 +15,8 @@ const validateSignUpData = (req) => {
     throw new Error("Please enter a strong password");
   }
 
+  
+
   return true; // ✅ VERY IMPORTANT
 };
 
@@ -23,6 +25,7 @@ const validateProfileEditData = (req) => {
     "firstName",
     "lastName",
     "age",
+    "gender",
     "about",
     "skills",
     "photourl",

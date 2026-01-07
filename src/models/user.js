@@ -53,6 +53,7 @@
 
         gender:{
             type:String,
+            required:true,
             // custom validator: by default it will run for new object creation
             // if you want to make it run while updating a user so in option attributes : runvalidator: true
 
