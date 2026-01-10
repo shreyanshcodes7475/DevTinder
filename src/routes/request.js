@@ -4,6 +4,8 @@ const ConnectionRequestModel = require("../models/connectionRequest");
 const User =require("../models/user")
 const requestRouter=express.Router();
 
+const sendEmail=require("../utility/sendEmail")
+
 // sending a Connection request (status: interested , Ignored)
 requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req,res)=>{
     // sending a connection request
@@ -47,6 +49,8 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req,res)=
     })
 
     const data= await connectionRequest.save(); 
+    const emailRes=await sendEmail.run("received friend request", req.user.firstName+ " sent you a friend request" );
+    console.log(emailRes);
     res.json({
         message: req.user.firstName + "sent you a connection request",
         data
@@ -89,6 +93,8 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async (req,re
         
         connectionRequest.status=status;
         const data= await connectionRequest.save();
+
+
 
         res.status(200).json({
             message: "Request" + status + "succesfully",
