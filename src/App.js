@@ -15,6 +15,7 @@ const profileRouter=require("./routes/profile");
 const userRouter=require("./routes/user")
 const cors=require("cors");
 
+require("./utility/cronJob")
 
 // its a middleware which  will run first for all type of routes and request - it can read body/json object
 app.use(cors({

@@ -112,3 +112,16 @@ backend :43.220.4.66/3000/
     -write code for sesclient
     -write code for sending email adderess
     -makke the email dynamic by passing more params to the run function
+
+    NOW for .env do manage multiple enviroment
+
+## scheduling cron jobs in nodejs
+    - installing node-cron
+    - learning about cron expression syntax- crontab.guru
+    - schedule a job
+    - find all the unique email id who have got a connection request in previous day
+    - send email through simple sending email logic iterating through list of emails
+    - explore queue mechnaism to send email for production or for large database 
+    -or we can give bulk emails to amazon ses
+    - make send email dynamic
+    - bee-queue / bull package
